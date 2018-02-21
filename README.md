@@ -16,7 +16,7 @@ TSScall is run from the commandline.
 
 ``python TSScall.py [OPTIONS] FORWARD_BEDGRAPH REVERSE_BEDGRAPH CHROMOSOME_SIZES OUTPUT_FILE``
 
-`FORWARD_BEDGRAPH` and `REVERSE_BEDGRAPH` are bedGraph files describing the coverage of 5' ends from Start-seq reads.  Stranded coverage is required. `FORWARD_BEDGRAPH` and `REVERSE_BEDGRAPH` describe the coverage for the forward (+) strand and the reverse (-) strand, respectively.
+`FORWARD_BEDGRAPH` and `REVERSE_BEDGRAPH` are bedGraph files describing the coverage of 5' ends from Start-seq reads at single-nucleotide resolution.  Stranded information is required. `FORWARD_BEDGRAPH` and `REVERSE_BEDGRAPH` describe the coverage for the forward (+) strand and the reverse (-) strand, respectively.
 
 5' end coverage may be calculated using the [bedtools utility package](http://bedtools.readthedocs.io/en/latest/). Coverage files may be generated from an alignment in BAM format.
 
@@ -35,7 +35,7 @@ Usage information may be found by running `python TSScall.py --help`.
 
 Sets annotation fie.  The annotation file must be in GTF format.
 
-Setting the annotation file affects how TSScall identifies TSSs. If an annotation file is used, TSScall will search for TSSs within regions centered on annotation-defined TSSs.
+Setting the annotation file affects how TSScall identifies TSSs. If an annotation file is used, TSScall will first search for TSSs within regions centered on annotation-defined TSSs before searching for unannotated TSSs.
 
 `--detail_file DETAIL_FILE`
 
@@ -79,23 +79,23 @@ TSScall associates TSSs into clusters by proximity. These clusters may be helpfu
 
 Search windows are made about each TSS in an annotation file.  This parameter determines the size of the annotation search window by setting the maximum distance away from an annotated TSS that a TSS may be called. The default value is 1000.
 
-`--annotation_join_distance ANNOTATION_JOIN_DISTANCE` 
+`--annotation_join_distance ANNOTATION_JOIN_DISTANCE`
 
 In some annotations, TSSs may be very close in space.  If within the annotation join distance, annotation search windows will be merged, resulting in a single call for the merged windows. The default value is 200.
 
-`--nutss_search_window NUTSS_SEARCH_WINDOW`
+`--utss_search_window NUTSS_SEARCH_WINDOW`
 
-Sets the distance between which unannotated TSSs may be called.  No two nuTSSs may be closer than the nuTSS search window apart. The default value is 250.
+Sets the distance between which unannotated TSSs may be called.  No two uTSSs may be closer than the uTSS search window apart. The default value is 250.
 
-`--nutss_filter_size NUTSS_FILTER_SIZE`
+`--utss_filter_size NUTSS_FILTER_SIZE`
 
-Prior to calling of unannotated TSSs, Start-seq reads are filtered based on annotated TSSs and TSSs called from annotation.  If a Start-seq read is within the nuTSS filter size of a TSS in the annotation or called from the annotation, it is filtered prior to unannotated TSS calling. The default value is 750.
+If an annotation is specified, TSScall will first search for TSSs near annotated start sites of gene models before calling additional unannotated TSSs. Prior to calling unannotated TSSs, reads are filtered and not considered in unannotated TSS calling if they are near annotated TSSs. Reads are filtered if they are within the uTSS filter size of either an annotated TSS or TSS called from annotation. The default uTSS filter size is 750.
 
 ### Output files
 
 #### BED output file
 
-The standard output file for TSScall is a list of TSSs in [BED format](http://genome.ucsc.edu/FAQ/FAQformat#format1). Entries are sorted by chromosome and position. TSSs are arbitrarily named by order of strand and position. By default, a TSS name will have the 'nuTSS' prefix. If a TSS corresponds to a transcript in an input annotation, its name will have the 'obsTSS' prefix. The associated transcript can be found in the optional detail file.  
+The standard output file for TSScall is a list of TSSs in [BED format](http://genome.ucsc.edu/FAQ/FAQformat#format1). Entries are sorted by chromosome and position. TSSs are arbitrarily named by order of strand and position. By default, a TSS name will have the 'uTSS' prefix. If a TSS corresponds to a transcript in an input annotation, its name will have the 'obsTSS' prefix. The associated transcript can be found in the optional detail file.  
 
 No information is stored in the score column (column 5). A placeholder value of '0' is used to maintain the BED file format.
 
@@ -111,7 +111,7 @@ The optional detail file contains additional information about each TSS in a tab
 * **Chromosome**
 * **Position**
 * **Reads** Coverage of 5' ends at the called TSS.
-* **Divergent?** Boolean field describing whether or not a divergent TSS was called. 
+* **Divergent?** Boolean field describing whether or not a divergent TSS was called.
 * **Divergent partner** If divergent, gives the assigned ID of the divergent TSS.
 * **Divergent distance** The distance from the TSS to its divergent partner.
 * **Convergent?** Boolean field describing whether or not a convergent TSS was called.
